@@ -1,6 +1,6 @@
 import sys, re
 import telebot
-from datetime import datetime
+import datetime
 from telebot import types
 sys.path.insert(0, 'E:\\Job\\Telegram_bot\\DataBase')
 from DataBase import Telegram_DB
@@ -10,6 +10,8 @@ token = '6850135105:AAFGbka8Bi2tpedXNuMFvEmw-XdNOa6q22g'
 bot = telebot.TeleBot(token)
 temp_user_data = {}
 hide_board = types.ReplyKeyboardRemove()
+command_list = ['/start', '/profile']
+
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -20,7 +22,6 @@ def start(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         button = types.KeyboardButton('Да')
         markup.add(button)
-        pass
         mess = bot.send_message(user_id, 'Здравствуйте, {0}. Хотите начать поиск работы?'.format(fio), reply_markup=markup)
         bot.register_next_step_handler(mess, get_job)
     else:
@@ -38,16 +39,16 @@ def start_reg(message):
 
 def process_fio_step(message):
     user_id = message.from_user.id
-    if message.text:
+    if bool(re.match(r'^[а-яА-Я\s]+$', message.text)):
         temp_user_data[user_id]['fio'] = message.text
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         button_male = types.KeyboardButton('Мужской')
         button_female = types.KeyboardButton('Женский')
         markup.add(button_male, button_female)
-        mess = bot.send_message(user_id, 'Выбери свой пол', reply_markup=markup)
+        mess = bot.send_message(user_id, 'Выберите ваш пол', reply_markup=markup)
         bot.register_next_step_handler(mess, process_sex_step)
     else:
-        mess = bot.send_message(user_id, 'Поле не может быть пустым. Пожалуйста, введите ваше ФИО', reply_markup=markup)
+        mess = bot.send_message(user_id, 'Некорректный ввод. Пожалуйста, введите ваше ФИО', reply_markup=hide_board)
         bot.register_next_step_handler(mess, process_fio_step)
 
 def process_sex_step(message):
@@ -63,7 +64,7 @@ def process_sex_step(message):
 def process_born_step(message):
     user_id = message.from_user.id
     try:
-        datetime.strptime(message.text, '%d.%m.%Y')
+        datetime.datetime.strptime(message.text, '%d.%m.%Y')
         temp_user_data[user_id]['born'] = message.text
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         button_school = types.KeyboardButton('Школа')
@@ -93,14 +94,17 @@ def process_education_level_step(message):
 
 def process_education_profession_step(message):
     user_id = message.from_user.id
-    temp_user_data[user_id]['profession'] = message.text
-    mess = bot.send_message(user_id, 'Введите контактный номер (формат: 85551116699)', reply_markup=hide_board)
-    bot.register_next_step_handler(mess, process_phone_step)
+    if bool(re.match(r'^[а-яА-Я\s]+$', message.text)):
+        temp_user_data[user_id]['profession'] = message.text
+        mess = bot.send_message(user_id, 'Введите контактный номер (формат: 85551116699)', reply_markup=hide_board)
+        bot.register_next_step_handler(mess, process_phone_step)
+    else:
+        mess = bot.send_message(user_id, 'Неверный ввод. Попробуйте снова')
+        bot.register_next_step_handler(mess, process_education_profession_step)
 
 def process_phone_step(message):
     user_id = message.from_user.id
-    pattern = re.compile(r"^\+?[1-9]\d{1,14}$")
-    if bool(pattern.match(message.text)):
+    if bool(re.match(r"^\d+$", message.text)):
         temp_user_data[user_id]['phone'] = message.text
         mess = bot.send_message(user_id, 'Введите дополнительную информацию о себе, которая может быть полезной  подборе работы', reply_markup=hide_board)
         bot.register_next_step_handler(mess, process_add_info_step)
@@ -135,7 +139,6 @@ def get_job(message):
     bot.send_message(user_id, 'Функция еще находится в разработке')
 
 
-
 @bot.message_handler(commands=['profile'])
 def profile(message):
     user_id = message.from_user.id
@@ -148,9 +151,14 @@ def profile(message):
         sex = info[4]
         born = info[5]
         education_level = info[6]
-        phone = info[7]
-        add_information = info[8]
-        mess = 'Данные вашего профиля:\nДата регистрации: {0}\nЗаработок: {1}\nКоличество выполненных заказов: {2}\nФИО: {3}\nПол: {4}\nДата рождения: {5}\nОбразование: {6}\nТелефон: {7}\nДополнительная информация: {8}'.format(data_reg, profit, orders, fio, sex, born, education_place, phone, add_information)
+        profession = info[7]
+        phone = info[8]
+        add_information = info[9]
+        try: 
+            profession = temp_user_data[user_id]['profession']
+            mess = 'Ваш профиль:\nДата регистрации: {0}\nЗаработок: {1}\nВыполненных заказов: {2}\nФИО: {3}\nПол: {4}\nДата рождения: {5}\nОбразование: {6}\nСпециализация: {7}\nТелефон: {8}\nДополнительная информация: {9}'.format(data_reg, profit, orders, fio, sex, born, education_level, profession, phone, add_information)
+        except:
+            mess = 'Ваш профиль:\nДата регистрации: {0}\nЗаработок: {1}\nВыполненных заказов: {2}\nФИО: {3}\nПол: {4}\nДата рождения: {5}\nОбразование: {6}\nТелефон: {7}\nДополнительная информация: {8}'.format(data_reg, profit, orders, fio, sex, born, education_level, phone, add_information)
         bot.send_message(user_id, text=mess)
     else:
         pass
@@ -164,7 +172,7 @@ def response(callback):
         bot.send_message(user_id, text=mess)
         temp_user_data[user_id]['status'] = 'waiting_fio'
     if callback.data == 'save_user':
-        data_reg = datetime.today()
+        data_reg = datetime.date.today()
         fio = temp_user_data[user_id]['fio']
         sex = temp_user_data[user_id]['sex']
         born = temp_user_data[user_id]['born']
@@ -177,15 +185,17 @@ def response(callback):
                 db.add_user(user_id, data_reg, fio, sex, born, education_level, profession, phone, add_information)
             else:
                 db.add_user(user_id, data_reg, fio, sex, born, education_level, 'NULL', phone, add_information)
+
             temp_user_data.pop(user_id)
+            mess = 'Регистрация завершена, перейти к поиску работы?'
+            markup = types.InlineKeyboardMarkup()
+            button_yes = types.InlineKeyboardButton(text='Да', callback_data='finding_job')
+            markup.add(button_yes)
+            bot.send_message(user_id, text=mess, reply_markup=markup)
         except:
             bot.send_message(user_id, 'Ошибка. Повторите попытку позже')
 
-        mess = 'Регистрация завершена, перейти к поиску работы?'
-        markup = types.InlineKeyboardMarkup()
-        button_yes = types.InlineKeyboardButton(text='Да', callback_data='finding_job')
-        markup.add(button_yes)
-        bot.send_message(user_id, text=mess, reply_markup=markup)
+        
         
     if callback.data == 'restart':
         temp_user_data[user_id] = {}
@@ -194,21 +204,6 @@ def response(callback):
     
     if callback.data == 'finding_job':
         bot.send_message(user_id, 'Функция еще находится в разработке')
-
-@bot.message_handler()
-def message_processor(message):
-    user_id = message.from_user.id
-    if db.user_is_exist(user_id): # Обработка сообщений для зарегистрированных пользователей
-        if message.text.lower() == 'профиль':
-            user_data = db.get_user_data(user_id)
-    else: # Обработка сообщений для не зарегистрированных пользователей
-        if temp_user_data[user_id]['status'] == 'started': # Сторонние сообщения
-            markup = types.InlineKeyboardMarkup()
-            button_yes = types.InlineKeyboardButton(text='Пройти регистрацию', callback_data='start_reg')
-            markup.add(button_yes)
-            bot.send_message(user_id, text='Для продолжения работы вам необходимо пройти регистрацию', reply_markup=markup )
-        
-        # Регистрация (Первый блок)
             
 
 if __name__ == '__main__':

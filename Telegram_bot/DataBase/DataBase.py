@@ -18,6 +18,7 @@ class Telegram_DB:
                 profit          INTEGER DEFAULT (0),
                 orders          INTEGER DEFAULT (0),
                 comment         TEXT,
+                photo           BLOB,
                 fio             TEXT    NOT NULL,
                 sex             TEXT    NOT NULL
                                         CHECK (sex = "Мужской" OR "Женский"),
@@ -44,7 +45,7 @@ class Telegram_DB:
     
     def get_user_info(self, user_id):
         result = self.cursor.execute('''
-        SELECT data_reg, profit, orders, fio, sex, born, education_place, phone, add_information FROM users_data
+        SELECT data_reg, profit, orders, fio, sex, born, education_level, profession, phone, add_information FROM users_data
         WHERE user_id = ?
         ''', (user_id, )).fetchone()
         return result
