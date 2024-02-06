@@ -330,10 +330,12 @@ def response(callback):
             bot.send_message(user_id, 'Ошибка. Повторите попытку позже')
 
     if callback.data == 'restart':
-        temp_user_data[user_id] = {}
         mess = bot.send_message(user_id, 'Хорошо, начнем! Напиши свое ФИО', reply_markup=hide_board)
-        bot.register_next_step_handler(mess, process_fio_step)
-    
+        if temp_user_data[user_id]['status'] == 'user':
+            bot.register_next_step_handler(mess, user_fio_step)
+        else: 
+            bot.register_next_step_handler(mess, guest_fio_step)
+            
     if callback.data == 'finding_job':
         bot.send_message(user_id, 'Функция еще находится в разработке')
             
