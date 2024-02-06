@@ -158,6 +158,7 @@ def profile(message):
             profession = temp_user_data[user_id]['profession']
             mess = 'Ваш профиль:\nДата регистрации: {0}\nЗаработок: {1}\nВыполненных заказов: {2}\nФИО: {3}\nПол: {4}\nДата рождения: {5}\nОбразование: {6}\nСпециализация: {7}\nТелефон: {8}\nДополнительная информация: {9}'.format(data_reg, profit, orders, fio, sex, born, education_level, profession, phone, add_information)
         except:
+            
             mess = 'Ваш профиль:\nДата регистрации: {0}\nЗаработок: {1}\nВыполненных заказов: {2}\nФИО: {3}\nПол: {4}\nДата рождения: {5}\nОбразование: {6}\nТелефон: {7}\nДополнительная информация: {8}'.format(data_reg, profit, orders, fio, sex, born, education_level, phone, add_information)
         bot.send_message(user_id, text=mess)
     else:
