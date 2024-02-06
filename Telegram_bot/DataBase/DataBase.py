@@ -25,22 +25,33 @@ class Telegram_DB:
                 born            TEXT    NOT NULL,
                 residence_place TEXT,
                 education_level TEXT    NOT NULL,
+                course          INTEGER,
                 profession      TEXT,
                 work_time_type  TEXT,
-                languages       TEXT,
+                languages       TEXT    DEFAULT("Русский"),
                 phone           TEXT    NOT NULL,
                 driver          TEXT,
+                tools           TEXT,
+                min_salary      INTEGER,
+                hard_work       INTEGER,
                 army            INTEGER,
                 add_information TEXT
             )
         ''')
         self.conn.commit()
     
-    def add_user(self, user_id, data_reg, fio, sex, born, education_level, profession, phone, add_information):
+    def add_guest(self, user_id, data_reg, fio, sex, born, education_level, course, profession, phone, add_information):
         self.cursor.execute('''
-        INSERT INTO users_data (user_id, data_reg, fio, sex, born, education_level, profession, phone, add_information)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (user_id, data_reg, fio, sex, born, education_level, profession, phone, add_information))
+        INSERT INTO users_data (user_id, data_reg, fio, sex, born, education_level, course, profession, phone, add_information)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (user_id, data_reg, fio, sex, born, education_level, course, profession, phone, add_information))
+        self.conn.commit()
+
+    def add_user(self, user_id, data_reg, fio, sex, photo, born, education_level, course, profession, residence_place, work_time_type, phone, driver, add_information):
+        self.cursor.execute('''
+        INSERT INTO users_data (user_id, data_reg, fio, sex, photo, born, education_level, course, profession, residence_place, work_time_type, phone, driver, add_information)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (user_id, data_reg, fio, sex, photo, born, education_level, course, profession, residence_place, work_time_type, phone, driver, add_information))
         self.conn.commit()
     
     def get_user_info(self, user_id):

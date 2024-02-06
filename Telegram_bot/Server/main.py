@@ -203,13 +203,27 @@ def user_education_level_step(message):
         temp_user_data[user_id]['education_level'] = message.text
         mess = bot.send_message(user_id, 'Введите специальность обучения', reply_markup=hide_board)
         bot.register_next_step_handler(mess, user_education_profession_step)
-    elif message.text in ['Школа']:
+    elif message.text == 'Студент':
+        temp_user_data[user_id]['education_level'] = message.text
+        mess = bot.send_message(user_id, 'Введите курсе, на котором вы сейчас обучаетесь?', reply_markup=hide_board)
+        bot.register_next_step_handler(mess, user_course_step)
+    elif message.text == 'Школа':
         temp_user_data[user_id]['education_level'] = message.text
         mess = bot.send_message(user_id, 'Введите контактный номер (формат: 85551116699)', reply_markup=hide_board)
         bot.register_next_step_handler(mess, user_phone_step)
     else:
         mess = bot.send_message(user_id, 'Пожалуйста, выберите один из представленных вариантов ответов')
         bot.register_next_step_handler(mess, user_education_level_step)
+
+def user_course_step(message):
+    user_id = message.from_user.id
+    if bool(re.match(r'^[\s]+$', message.text)):
+        temp_user_data[user_id]['course'] = message.text
+        mess = bot.send_message(user_id, 'Введите специальность обучения', reply_markup=hide_board)
+        bot.register_next_step_handler(mess, user_education_profession_step)
+    else:
+        mess = bot.send_message(user_id, 'Неверное значение. Введите только номер курса')
+        bot.register_next_step_handler(mess, user_course_step)
 
 def user_education_profession_step(message):
     user_id = message.from_user.id
