@@ -195,8 +195,6 @@ def response(callback):
         except:
             bot.send_message(user_id, 'Ошибка. Повторите попытку позже')
 
-        
-        
     if callback.data == 'restart':
         temp_user_data[user_id] = {}
         mess = bot.send_message(user_id, 'Хорошо, начнем! Напиши свое ФИО', reply_markup=hide_board)
