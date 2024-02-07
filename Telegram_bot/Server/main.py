@@ -108,8 +108,11 @@ def start(message):
 def start_reg(message):
     user_id = message.from_user.id
     temp_user_data[user_id] = {}
-    mess = bot.send_message(user_id, 'Хорошо, начнем! Для продолжения необходимо заполнить небольшую анкету.\n Напиши свое ФИО', reply_markup=hide_board)
+    mess = bot.send_message(user_id, 'Хорошо, приступим! Для продолжения необходимо заполнить небольшую анкету.\nОтправьте свое фото', reply_markup=hide_board)
     bot.register_next_step_handler(mess, process_fio_step)
+
+def process_photo_step(message):
+    pass
 
 def process_fio_step(message):
     user_id = message.from_user.id
@@ -160,15 +163,71 @@ def process_education_level_step(message):
         mess = bot.send_message(user_id, 'Пожалуйста, выберите один из представленных вариантов ответов')
         bot.register_next_step_handler(mess, process_education_level_step)
 
+def process_course_step(message):
+    user_id = message.from_user.id
+    temp_user_data[user_id]['course'] = message.text
+    mess = get_mess_profission(user_id)
+    bot.register_next_step_handler(mess, process_profession_step)
+
 def process_profession_step(message):
     user_id = message.from_user.id
-    if bool(re.match(r'^[а-яА-Я\s]+$', message.text)):
-        temp_user_data[user_id]['profession'] = message.text
-        mess = bot.send_message(user_id, 'Введите контактный номер (формат: 85551116699)', reply_markup=hide_board)
-        bot.register_next_step_handler(mess, process_phone_step)
+    if message.text not in command_list:
+        if temp_user_data[user_id]['sex'] == 'Мужской':
+            temp_user_data[user_id]['profession'] = message.text
+            mess = get_mess_min_salary
+            bot.register_next_step_handler(mess, process_min_salary_step)
     else:
         mess = bot.send_message(user_id, 'Неверный ввод. Попробуйте снова')
-        bot.register_next_step_handler(mess, process_education_profession_step)
+        bot.register_next_step_handler(mess, process_profession_step)
+
+def process_min_salary_step(message):
+    user_id = message.from_user.id
+    if bool(re.match(r"^\d+$", message.text)):
+        temp_user_data[user_id]['min_salary'] = message.text
+        mess = get_mess_hardwork(user_id, temp_user_data[user_id]['sex'])
+        bot.register_next_step_handler(mess, process_hardwork_step)
+    else:
+        mess = bot.send_message(user_id, 'Неверный ввод. Введите пожалуйста числом')
+        bot.register_next_step_handler(mess, process_min_salary_step)
+
+def process_hardwork_step(message):
+    user_id = message.from_user.id
+    if message.text in ['Да', 'Нет']:
+        temp_user_data[user_id]['hardwork'] = message.text
+        mess = get_mess_midwork(user_id,  temp_user_data[user_id]['sex'])
+        bot.register_next_step_handler(mess, process_midwork_step)
+    else:
+        mess = bot.send_message(user_id, 'Неверный ввод. Выберите один из предложенных вариантов ответа')
+        bot.register_next_step_handler(mess, process_hardwork_step)
+
+def process_midwork_step(message):
+    user_id = message.from_user.id
+    if message.text in ['Да', 'Нет']:
+        temp_user_data[user_id]['midwork'] = message.text
+        mess = get_mess_artwork(user_id)
+        bot.register_next_step_handler(mess, process_artwork_step)
+    else:
+        mess = bot.send_message(user_id, 'Неверный ввод. Выберите один из предложенных вариантов ответа')
+        bot.register_next_step_handler(mess, process_midwork_step)
+
+def process_artwork_step(message):
+    user_id = message.from_user.id
+    if message.text in ['Да', 'Нет']:
+        temp_user_data[user_id]['artwork'] = message.text
+        mess = get_mess_artwork(user_id)
+        bot.register_next_step_handler(mess, process_addwork_step)
+    else:
+        mess = bot.send_message(user_id, 'Неверный ввод. Выберите один из предложенных вариантов ответа')
+        bot.register_next_step_handler(mess, process_artwork_step)
+
+def process_addwork_step(message):
+    user_id = message.from_user.id
+    temp_user_data[user_id]['artwork'] = message.text
+    mess = get_mess_tools(user_id)
+    bot.register_next_step_handler(mess, process_tools_step)
+
+def process_tools_step(message):
+    pass
 
 def process_phone_step(message):
     user_id = message.from_user.id
