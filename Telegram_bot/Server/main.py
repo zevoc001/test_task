@@ -20,31 +20,34 @@ def start(message):
         info = db.get_user_info(user_id)
         fio = info[3]
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        button = types.KeyboardButton('Да')
-        markup.add(button)
+        btn = types.KeyboardButton('Да')
+        markup.add(btn)
         mess = bot.send_message(user_id, 'Здравствуйте, {0}. Хотите начать поиск работы?'.format(fio), reply_markup=markup)
         bot.register_next_step_handler(mess, get_job)
     else:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        button_guest = types.KeyboardButton('Гостевая')
-        button_full = types.KeyboardButton('Полная')
-        markup.add(button_guest, button_full)
+        btn_guest = types.KeyboardButton('Гостевая')
+        btn_user = types.KeyboardButton('Полная')
+        markup.add(btn_guest, btn_user)
         mess = bot.send_message(user_id, 'Здравствуйте. Мы компания, которая помогает найти работу. Для продолжения работы вам необходимо пройти анкетирование. Вы можете заполнить небольшую гостевую или полную анкету.\n Выберите тип анкеты', reply_markup=markup)
         bot.register_next_step_handler(mess, start_reg)
 
 def start_reg(message):
     user_id = message.from_user.id
+    mess = bot.send_message(user_id, 'Хорошо, начнем! Напиши свое ФИО', reply_markup=hide_board)
     if message.text == 'Гостевая':
         temp_user_data[user_id] = {'status': 'guest'}
-        mess = bot.send_message(user_id, 'Хорошо, начнем! Напиши свое ФИО', reply_markup=hide_board)
         bot.register_next_step_handler(mess, guest_fio_step)
     if message.text == 'Полная':
         temp_user_data[user_id] = {'status': 'user'}
-        mess = bot.send_message(user_id, 'Хорошо, начнем! Напиши свое ФИО', reply_markup=hide_board)
         bot.register_next_step_handler(mess, user_fio_step)
     else:
-        mess = bot.send_message(user_id, 'Пожалуйста выберите один из предложенных вариантов ответа', reply_markup=hide_board)
-        bot.register_next_step_handler(mess, guest_fio_step)
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn_guest = types.KeyboardButton('Гостевая')
+        btn_user = types.KeyboardButton('Полная')
+        markup.add(btn_guest, btn_user)
+        mess = bot.send_message(user_id, 'Пожалуйста выберите один из предложенных в меню вариантов ответа', reply_markup=markup)
+        bot.register_next_step_handler(mess, start_reg)
 
 # Регистрация гостя
 def guest_fio_step(message):
@@ -52,9 +55,9 @@ def guest_fio_step(message):
     if bool(re.match(r'^[а-яА-Я\s]+$', message.text)):
         temp_user_data[user_id]['fio'] = message.text
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        button_male = types.KeyboardButton('Мужской')
-        button_female = types.KeyboardButton('Женский')
-        markup.add(button_male, button_female)
+        btn_male = types.KeyboardButton('Мужской')
+        btn_female = types.KeyboardButton('Женский')
+        markup.add(btn_male, btn_female)
         mess = bot.send_message(user_id, 'Выберите ваш пол', reply_markup=markup)
         bot.register_next_step_handler(mess, guest_sex_step)
     else:
@@ -65,10 +68,14 @@ def guest_sex_step(message):
     user_id = message.from_user.id
     if message.text in ['Мужской', 'Женский']:
         temp_user_data[user_id]['sex'] = message.text
-        mess = bot.send_message(user_id, 'Напиши свою дату рождения в формате дд.мм.гггг', reply_markup=hide_board)
+        mess = bot.send_message(user_id, 'Введите свою дату рождения в формате дд.мм.гггг', reply_markup=hide_board)
         bot.register_next_step_handler(mess, guest_born_step)
     else:
-        mess = bot.send_message(user_id, 'Пожалуйста, выберите один из представленных вариантов ответов')
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn_male = types.KeyboardButton('Мужской')
+        btn_female = types.KeyboardButton('Женский')
+        markup.add(btn_male, btn_female)
+        mess = bot.send_message(user_id, 'Пожалуйста, выберите один из представленных вариантов ответов', reply_markup=markup)
         bot.register_next_step_handler(mess, guest_sex_step)
 
 def guest_born_step(message):
@@ -90,36 +97,56 @@ def guest_born_step(message):
 
 def guest_education_level_step(message):
     user_id = message.from_user.id
-    if message.text in ['Среднее профессиональное', 'Высшее', 'Студент']:
+    if message.text in ['Среднее профессиональное', 'Высшее']:
         temp_user_data[user_id]['education_level'] = message.text
         mess = bot.send_message(user_id, 'Введите специальность обучения', reply_markup=hide_board)
-        bot.register_next_step_handler(mess, guest_education_profession_step)
-    elif message.text in ['Школа']:
+        bot.register_next_step_handler(mess, guest_profession_step)
+    elif message.text == 'Студент':
         temp_user_data[user_id]['education_level'] = message.text
-        mess = bot.send_message(user_id, 'Введите контактный номер (формат: 85551116699)', reply_markup=hide_board)
+        mess = bot.send_message(user_id, 'Введите курсе, на котором вы сейчас обучаетесь?', reply_markup=hide_board)
+        bot.register_next_step_handler(mess, guest_course_step)
+    elif message.text == 'Школа':
+        temp_user_data[user_id]['education_level'] = message.text
+        mess = bot.send_message(user_id, 'Введите контактный номер (шаблон: 85551116699)', reply_markup=hide_board)
         bot.register_next_step_handler(mess, guest_phone_step)
     else:
-        mess = bot.send_message(user_id, 'Пожалуйста, выберите один из представленных вариантов ответов')
-        bot.register_next_step_handler(mess, guest_education_level_step)
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn_school = types.KeyboardButton('Школа')
+        btn_college = types.KeyboardButton('Среднее профессиональное')
+        btn_high_school = types.KeyboardButton('Высшее')
+        btn_student = types.KeyboardButton('Студент')
+        markup.add(btn_school, btn_college, btn_high_school, btn_student)
+        mess = bot.send_message(user_id, 'Пожалуйста, выберите один из представленных в меню вариантов ответа')
+        bot.register_next_step_handler(mess, user_education_level_step)
 
-def guest_education_profession_step(message):
+def guest_course_step(message):
+    user_id = message.from_user.id
+    if bool(re.match(r'^[\s]+$', message.text)):
+        temp_user_data[user_id]['course'] = message.text
+        mess = bot.send_message(user_id, 'Введите специальность обучения', reply_markup=hide_board)
+        bot.register_next_step_handler(mess, guest_profession_step)
+    else:
+        mess = bot.send_message(user_id, 'Неверное значение. Вводите только номер курса')
+        bot.register_next_step_handler(mess, guest_course_step)
+
+def guest_profession_step(message):
     user_id = message.from_user.id
     if bool(re.match(r'^[а-яА-Я\s]+$', message.text)):
         temp_user_data[user_id]['profession'] = message.text
-        mess = bot.send_message(user_id, 'Введите контактный номер (формат: 85551116699)', reply_markup=hide_board)
+        mess = bot.send_message(user_id, 'Введите контактный номер (шаблон: 85551116699)', reply_markup=hide_board)
         bot.register_next_step_handler(mess, guest_phone_step)
     else:
         mess = bot.send_message(user_id, 'Неверный ввод. Попробуйте снова')
-        bot.register_next_step_handler(mess, guest_education_profession_step)
+        bot.register_next_step_handler(mess, guest_profession_step, reply_markup=hide_board)
 
 def guest_phone_step(message):
     user_id = message.from_user.id
     if bool(re.match(r"^\d+$", message.text)):
         temp_user_data[user_id]['phone'] = message.text
-        mess = bot.send_message(user_id, 'Введите дополнительную информацию о себе, которая может быть полезной  подборе работы', reply_markup=hide_board)
+        mess = bot.send_message(user_id, 'Введите дополнительную информацию о себе, которая может быть полезной при подборе работы', reply_markup=hide_board)
         bot.register_next_step_handler(mess, guest_add_info_step)
     else:
-        mess = bot.send_message(user_id, 'Неверный формат, пожалуйства введите номер в соответствии с шаблоном (формат: 85551116699)', reply_markup=hide_board)
+        mess = bot.send_message(user_id, 'Неверный формат, пожалуйства введите номер в соответствии с шаблоном (шаблон: 85551116699)', reply_markup=hide_board)
         bot.register_next_step_handler(mess, guest_phone_step)
 
 def guest_add_info_step(message):
@@ -137,9 +164,12 @@ def guest_add_info_step(message):
     button_save = types.InlineKeyboardButton(text='Все верно', callback_data='save_user')
     button_restart = types.InlineKeyboardButton(text='Заполнить профиль заново', callback_data='restart')
     markup.add(button_save, button_restart)
-    try: 
-        profession = temp_user_data[user_id]['profession']
-        mess = 'Отлично, проверьте правильность данных:\nФИО: {0}\nПол: {1}\nДата рождения: {2}\nОбразование: {3}\nСпециализация: {4}\nТелефон: {5}\nДополнительная информация: {6}'.format(fio, sex, born, education_level, profession, phone, add_information)
+    if 'course' in temp_user_data[user_id]:
+        course = temp_user_data[user_id]['course']
+        if 'profession' in temp_user_data[user_id]:
+            profession = temp_user_data[user_id]['profession']
+            mess = 'Отлично, проверьте правильность данных:\nФИО: {0}\nПол: {1}\nДата рождения: {2}\nОбразование: {3}\nСпециализация: {4}\nТелефон: {5}\nДополнительная информация: {6}'.format(fio, sex, born, education_level, profession, phone, add_information)
+        
     except:
         mess = 'Отлично, проверьте правильность данных:\nФИО: {0}\nПол: {1}\nДата рождения: {2}\nОбразование: {3}\nТелефон: {4}\nДополнительная информация: {5}'.format(fio, sex, born, education_level, phone, add_information)
     bot.send_message(user_id, mess, reply_markup=markup)
