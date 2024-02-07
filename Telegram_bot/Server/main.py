@@ -86,6 +86,9 @@ def get_mess_phone(user_id):
     mess = bot.send_message(user_id, 'Почти закончили. Введите ваш контактный номер телефона (формат 89995550011)', reply_markup=hide_board)
     return mess
 
+def get_mess_tools(user_id):
+    mess = bot.send_message(user_id, 'Какие инструменты для работы у вас есть (компьютер, дрель, электропила и т.д.)?', reply_markup=hide_board)
+    return mess
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -157,8 +160,8 @@ def process_education_level_step(message):
         bot.register_next_step_handler(mess, process_course_step)
     elif message.text == 'Школа':
         temp_user_data[user_id]['education_level'] = message.text
-        mess = 
-        bot.register_next_step_handler(mess, process_phone_step)
+        mess = get_mess_min_salary
+        bot.register_next_step_handler(mess, process_min_salary_step)
     else:
         mess = bot.send_message(user_id, 'Пожалуйста, выберите один из представленных вариантов ответов')
         bot.register_next_step_handler(mess, process_education_level_step)
@@ -227,7 +230,10 @@ def process_addwork_step(message):
     bot.register_next_step_handler(mess, process_tools_step)
 
 def process_tools_step(message):
-    pass
+    user_id = message.from_user.id
+    temp_user_data[user_id]['tools'] = message.text
+    mess = get_mess_phone(user_id)
+    bot.register_next_step_handler(mess, process_phone_step)
 
 def process_phone_step(message):
     user_id = message.from_user.id
