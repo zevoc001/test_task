@@ -9,29 +9,31 @@ class Telegram_DB:
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS users_data (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id         INTEGER NOT NULL,
-                access          TEXT    NOT NULL
+                Телеграм_ID         INTEGER NOT NULL,
+                Доступ          TEXT    NOT NULL
                                         DEFAULT "Гость",
-                data_reg        DATA    NOT NULL,
-                user_status     TEXT,
-                rating          INTEGER DEFAULT (0),
-                profit          INTEGER DEFAULT (0),
-                orders          INTEGER DEFAULT (0),
-                comment         TEXT,
-                photo           BLOB,
-                fio             TEXT    NOT NULL,
-                sex             TEXT    NOT NULL
+                Дата регистрации        DATA    NOT NULL,
+                Статус     TEXT,
+                Рейтинг          INTEGER DEFAULT (0),
+                Заработок          INTEGER DEFAULT (0),
+                Заказы          INTEGER DEFAULT (0),
+                Комментарии         TEXT,
+                Фотография           BLOB,
+                ФИО             TEXT    NOT NULL,
+                Пол             TEXT    NOT NULL
                                         CHECK (sex = "Мужской" OR "Женский"),
-                born            TEXT    NOT NULL,
-                residence_place TEXT,
-                education_level TEXT    NOT NULL,
-                profession      TEXT,
-                work_time_type  TEXT,
-                languages       TEXT,
-                phone           TEXT    NOT NULL,
-                driver          TEXT,
-                army            INTEGER,
-                add_information TEXT
+                Дата рождения            TEXT    NOT NULL,
+                Возраст
+                Место жительства TEXT,
+                Образование TEXT    NOT NULL,
+                Специальность      TEXT,
+                Рабочее время  TEXT,
+                Языки       TEXT,
+                Телефон           TEXT    NOT NULL,
+                Водительские права          TEXT,
+                Машина
+                Служил            INTEGER,
+                Доп. инф. TEXT
             )
         ''')
         self.conn.commit()

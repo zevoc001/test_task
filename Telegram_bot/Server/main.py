@@ -83,11 +83,26 @@ def get_mess_addwork(user_id):
     return mess
 
 def get_mess_phone(user_id):
-    mess = bot.send_message(user_id, 'Почти закончили. Введите ваш контактный номер телефона (формат 89995550011)', reply_markup=hide_board)
+    mess = bot.send_message(user_id, 'Введите ваш контактный номер телефона (формат 89995550011)', reply_markup=hide_board)
     return mess
 
 def get_mess_tools(user_id):
     mess = bot.send_message(user_id, 'Какие инструменты для работы у вас есть (компьютер, дрель, электропила и т.д.)?', reply_markup=hide_board)
+    return mess
+
+def get_mess_local(user_id):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_yes = types.KeyboardButton('Да')
+    btn_no = types.KeyboardButton('Нет')
+    markup.add(btn_yes, btn_no)
+    mess = bot.send_message(user_id, 'Почти закончили. Хорошо ли вы ориентируетесь в Ставрополе?', reply_markup=hide_board)
+    return mess
+
+def get_mess_final(user_id):
+    mess = 'Отлично, давайте еще раз проверим, все ли верно.'
+    for i in temp_user_data[user_id]:
+        data = temp_user_data[user_id][i]
+        mess += '\n{}: {}'.format(i, data)
     return mess
 
 @bot.message_handler(commands=['start'])
@@ -120,7 +135,7 @@ def process_photo_step(message):
 def process_fio_step(message):
     user_id = message.from_user.id
     if bool(re.match(r'^[а-яА-Я\s]+$', message.text)):
-        temp_user_data[user_id]['fio'] = message.text
+        temp_user_data[user_id]['ФИО'] = message.text
         mess = get_mess_sex(user_id)
         bot.register_next_step_handler(mess, process_sex_step)
     else:
@@ -130,7 +145,7 @@ def process_fio_step(message):
 def process_sex_step(message):
     user_id = message.from_user.id
     if message.text in ['Мужской', 'Женский']:
-        temp_user_data[user_id]['sex'] = message.text
+        temp_user_data[user_id]['Пол'] = message.text
         mess = get_mess_born(user_id)
         bot.register_next_step_handler(mess, process_born_step)
     else:
@@ -141,7 +156,7 @@ def process_born_step(message):
     user_id = message.from_user.id
     try:
         datetime.datetime.strptime(message.text, '%d.%m.%Y')
-        temp_user_data[user_id]['born'] = message.text
+        temp_user_data[user_id]['Дата рождения'] = message.text
         mess = get_mess_education_level(user_id)
         bot.register_next_step_handler(mess, process_education_level_step)
     except ValueError:
@@ -151,15 +166,15 @@ def process_born_step(message):
 def process_education_level_step(message):
     user_id = message.from_user.id
     if message.text in ['Среднее профессиональное', 'Высшее']:
-        temp_user_data[user_id]['education_level'] = message.text
+        temp_user_data[user_id]['Образование'] = message.text
         mess = get_mess_profission(user_id)
         bot.register_next_step_handler(mess, process_profession_step)
     elif message.text == 'Студент':
-        temp_user_data[user_id]['education_level'] = message.text
+        temp_user_data[user_id]['Образование'] = message.text
         mess = get_mess_course(user_id)
         bot.register_next_step_handler(mess, process_course_step)
     elif message.text == 'Школа':
-        temp_user_data[user_id]['education_level'] = message.text
+        temp_user_data[user_id]['Образование'] = message.text
         mess = get_mess_min_salary
         bot.register_next_step_handler(mess, process_min_salary_step)
     else:
@@ -168,15 +183,15 @@ def process_education_level_step(message):
 
 def process_course_step(message):
     user_id = message.from_user.id
-    temp_user_data[user_id]['course'] = message.text
+    temp_user_data[user_id]['Курс'] = message.text
     mess = get_mess_profission(user_id)
     bot.register_next_step_handler(mess, process_profession_step)
 
 def process_profession_step(message):
     user_id = message.from_user.id
     if message.text not in command_list:
-        if temp_user_data[user_id]['sex'] == 'Мужской':
-            temp_user_data[user_id]['profession'] = message.text
+        if temp_user_data[user_id]['Пол'] == 'Мужской':
+            temp_user_data[user_id]['Специальность'] = message.text
             mess = get_mess_min_salary
             bot.register_next_step_handler(mess, process_min_salary_step)
     else:
@@ -186,7 +201,7 @@ def process_profession_step(message):
 def process_min_salary_step(message):
     user_id = message.from_user.id
     if bool(re.match(r"^\d+$", message.text)):
-        temp_user_data[user_id]['min_salary'] = message.text
+        temp_user_data[user_id]['Минимальная оплата (в час)'] = message.text
         mess = get_mess_hardwork(user_id, temp_user_data[user_id]['sex'])
         bot.register_next_step_handler(mess, process_hardwork_step)
     else:
@@ -196,7 +211,7 @@ def process_min_salary_step(message):
 def process_hardwork_step(message):
     user_id = message.from_user.id
     if message.text in ['Да', 'Нет']:
-        temp_user_data[user_id]['hardwork'] = message.text
+        temp_user_data[user_id]['Тяжелая работа'] = message.text
         mess = get_mess_midwork(user_id,  temp_user_data[user_id]['sex'])
         bot.register_next_step_handler(mess, process_midwork_step)
     else:
@@ -206,7 +221,7 @@ def process_hardwork_step(message):
 def process_midwork_step(message):
     user_id = message.from_user.id
     if message.text in ['Да', 'Нет']:
-        temp_user_data[user_id]['midwork'] = message.text
+        temp_user_data[user_id]['Работа средней сложности'] = message.text
         mess = get_mess_artwork(user_id)
         bot.register_next_step_handler(mess, process_artwork_step)
     else:
@@ -216,7 +231,7 @@ def process_midwork_step(message):
 def process_artwork_step(message):
     user_id = message.from_user.id
     if message.text in ['Да', 'Нет']:
-        temp_user_data[user_id]['artwork'] = message.text
+        temp_user_data[user_id]['Творческая работа'] = message.text
         mess = get_mess_artwork(user_id)
         bot.register_next_step_handler(mess, process_addwork_step)
     else:
@@ -225,47 +240,45 @@ def process_artwork_step(message):
 
 def process_addwork_step(message):
     user_id = message.from_user.id
-    temp_user_data[user_id]['artwork'] = message.text
+    temp_user_data[user_id]['Творческая работа'] = message.text
     mess = get_mess_tools(user_id)
     bot.register_next_step_handler(mess, process_tools_step)
 
 def process_tools_step(message):
     user_id = message.from_user.id
-    temp_user_data[user_id]['tools'] = message.text
+    temp_user_data[user_id]['Инструменты в наличии'] = message.text
     mess = get_mess_phone(user_id)
     bot.register_next_step_handler(mess, process_phone_step)
 
 def process_phone_step(message):
     user_id = message.from_user.id
     if bool(re.match(r"^\d+$", message.text)):
-        temp_user_data[user_id]['phone'] = message.text
-        mess = bot.send_message(user_id, 'Введите дополнительную информацию о себе, которая может быть полезной  подборе работы', reply_markup=hide_board)
-        bot.register_next_step_handler(mess, process_add_info_step)
+        temp_user_data[user_id]['Телефон'] = message.text
+        mess = get_mess_local(user_id)
+        bot.register_next_step_handler(mess, process_local_step)
     else:
-        mess = bot.send_message(user_id, 'Неверный формат, пожалуйства введите номер в соответствии с шаблоном (формат: 85551116699)', reply_markup=hide_board)
+        mess = bot.send_message(user_id, 'Неверный формат, пожалуйства введите номер в соответствии с шаблоном (формат: 85551116699)')
         bot.register_next_step_handler(mess, process_phone_step)
 
-def process_add_info_step(message):
+def process_local_step(message):
     user_id = message.from_user.id
-    temp_user_data[user_id]['add_information'] = message.text
+    if message.text in ['Да', 'Нет']:
+        temp_user_data[user_id]['Местный'] = message.text
+        mess = get_mess_final(user_id)
+        bot.register_next_step_handler(mess, process_check_step)
+    else:
+        mess = bot.send_message(user_id, 'Неверный ввод. Выберите один из предложенных вариантов ответа')
+        bot.register_next_step_handler(mess, process_local_step)
 
-    fio = temp_user_data[user_id]['fio']
-    sex = temp_user_data[user_id]['sex']
-    born = temp_user_data[user_id]['born']
-    education_level = temp_user_data[user_id]['education_level']
-    phone = temp_user_data[user_id]['phone']
-    add_information = temp_user_data[user_id]['add_information']
-
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    button_save = types.InlineKeyboardButton(text='Все верно', callback_data='save_user')
-    button_restart = types.InlineKeyboardButton(text='Заполнить профиль заново', callback_data='restart')
-    markup.add(button_save, button_restart)
-    try: 
-        profession = temp_user_data[user_id]['profession']
-        mess = 'Отлично, проверьте правильность данных:\nФИО: {0}\nПол: {1}\nДата рождения: {2}\nОбразование: {3}\nСпециализация: {4}\nТелефон: {5}\nДополнительная информация: {6}'.format(fio, sex, born, education_level, profession, phone, add_information)
-    except:
-        mess = 'Отлично, проверьте правильность данных:\nФИО: {0}\nПол: {1}\nДата рождения: {2}\nОбразование: {3}\nТелефон: {4}\nДополнительная информация: {5}'.format(fio, sex, born, education_level, phone, add_information)
-    bot.send_message(user_id, mess, reply_markup=markup)
+def process_check_step(message):
+    user_id = message.from_user.id
+    if message.text == 'Сохранить':
+        mess = get_mess_final(user_id)
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        button_save = types.InlineKeyboardButton(text='Все верно', callback_data='save_user')
+        button_restart = types.InlineKeyboardButton(text='Заполнить профиль заново', callback_data='restart')
+        markup.add(button_save, button_restart)
+        bot.send_message(user_id, mess, reply_markup=markup)
 
 def get_job(message):
     user_id = message.from_user.id
