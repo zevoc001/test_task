@@ -20,7 +20,7 @@ class Telegram_DB:
                 Фотография          BLOB,
                 ФИО                 TEXT    NOT NULL,
                 Пол                 TEXT    NOT NULL
-                                    CHECK (Пол = "Мужской" OR "Женский"),
+                                    CHECK (Пол = "Мужской" OR Пол = "Женский"),
                 [Дата рождения]     TEXT    NOT NULL,
                 [Место жительства]  TEXT,
                 Образование         TEXT    NOT NULL,

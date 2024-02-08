@@ -190,7 +190,7 @@ def process_education_level_step(message):
         bot.register_next_step_handler(mess, process_course_step)
     elif message.text == 'Школа':
         temp_user_data[user_id]['Образование'] = message.text
-        mess = get_mess_min_salary
+        mess = get_mess_min_salary(user_id)
         bot.register_next_step_handler(mess, process_min_salary_step)
     else:
         mess = bot.send_message(user_id, 'Пожалуйста, выберите один из представленных вариантов ответов')
