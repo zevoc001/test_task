@@ -47,7 +47,7 @@ def get_mess_course(user_id):
     return mess
 
 def get_mess_profission(user_id):
-    mess = bot.send_message(user_id, 'Введите специальность обучения', reply_markup=hide_board)
+    mess = bot.send_message(user_id, 'Введите специальность и место обучения', reply_markup=hide_board)
     return mess
 
 def get_mess_min_salary(user_id):
