@@ -115,7 +115,7 @@ def start(message):
     user_id = message.from_user.id
     if db.user_is_exist(user_id):
         info = db.get_user_info(user_id)
-        fio = info[3]
+        fio = info[2]
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         button = types.KeyboardButton('Да')
         markup.add(button)
