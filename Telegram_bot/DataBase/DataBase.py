@@ -90,6 +90,7 @@ class Telegram_DB:
         WHERE Телеграм_ID = ?
         ''', (data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local, user_id))
         self.conn.commit()
+        
 
     def close(self):
         self.conn.close()
