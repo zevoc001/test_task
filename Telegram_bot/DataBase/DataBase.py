@@ -5,49 +5,54 @@ class Telegram_DB:
     def __init__(self):
         self.conn = sqlite3.connect('mbt.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
-    
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS users_data (
-                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                id                  INTEGER PRIMARY KEY AUTOINCREMENT,
                 Телеграм_ID         INTEGER NOT NULL,
-                Доступ          TEXT    NOT NULL
-                                        DEFAULT "Гость",
-                Дата регистрации        DATA    NOT NULL,
-                Статус     TEXT,
-                Рейтинг          INTEGER DEFAULT (0),
-                Заработок          INTEGER DEFAULT (0),
-                Заказы          INTEGER DEFAULT (0),
+                Доступ              TEXT    NOT NULL
+                                    DEFAULT "Гость",
+                [Дата регистрации]  DATA    NOT NULL,
+                Статус              TEXT,
+                Рейтинг             INTEGER DEFAULT (0),
+                Заработок           INTEGER DEFAULT (0),
+                Заказы              INTEGER DEFAULT (0),
                 Комментарии         TEXT,
-                Фотография           BLOB,
-                ФИО             TEXT    NOT NULL,
-                Пол             TEXT    NOT NULL
-                                        CHECK (sex = "Мужской" OR "Женский"),
-                Дата рождения            TEXT    NOT NULL,
-                Возраст
-                Место жительства TEXT,
-                Образование TEXT    NOT NULL,
-                Специальность      TEXT,
-                Рабочее время  TEXT,
-                Языки       TEXT,
-                Телефон           TEXT    NOT NULL,
-                Водительские права          TEXT,
-                Машина
-                Служил            INTEGER,
-                Доп. инф. TEXT
+                Фотография          BLOB,
+                ФИО                 TEXT    NOT NULL,
+                Пол                 TEXT    NOT NULL
+                                    CHECK (sex = "Мужской" OR "Женский"),
+                [Дата рождения]     TEXT    NOT NULL,
+                Возраст             INTEGER,
+                [Место жительства]  TEXT,
+                Образование         TEXT    NOT NULL,
+                Курс                INTEGER,
+                Специальность       TEXT,
+                [Мин. ЗП]           INTEGER,
+                [Тяжелый труд]      INTEGER,
+                [Средний труд]      INTEGER,
+                [Творческий труд]   INTEGER,
+                [Рабочее время]     TEXT,
+                Инструменты         ТEXT,
+                Языки               TEXT,
+                Телефон             TEXT    NOT NULL,
+                Водитель            TEXT,
+                Машина              INTEGER
+                Служил              INTEGER,
+                [Доп. инф.]         TEXT
             )
         ''')
         self.conn.commit()
     
-    def add_user(self, user_id, data_reg, fio, sex, born, education_level, profession, phone, add_information):
+    def add_user(self, user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, tools, phone):
         self.cursor.execute('''
-        INSERT INTO users_data (user_id, data_reg, fio, sex, born, education_level, profession, phone, add_information)
+        INSERT INTO users_data (Телеграм_ID, [Дата регистрации], Фото, ФИО, Пол, [Дата рождения], Образование, Курс, Специальность, [Мин. ЗП], [Тяжелый труд], [Средний труд], [Творческий труд], Инструменты, Телефон)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (user_id, data_reg, fio, sex, born, education_level, profession, phone, add_information))
+        ''', (user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, tools, phone))
         self.conn.commit()
     
     def get_user_info(self, user_id):
         result = self.cursor.execute('''
-        SELECT data_reg, profit, orders, fio, sex, born, education_level, profession, phone, add_information FROM users_data
+        SELECT [Дата регистрации], Фото, ФИО, Пол, [Дата рождения], Образование, Курс, Специальность, [Мин. ЗП], [Тяжелый труд], [Средний труд], [Творческий труд], Инструменты, Телефон, Заработок, Заказы FROM users_data
         WHERE user_id = ?
         ''', (user_id, )).fetchone()
         return result
