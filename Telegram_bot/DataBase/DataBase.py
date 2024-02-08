@@ -68,15 +68,28 @@ class Telegram_DB:
         else:
             return 0
     
-    def remove_user(self, user_id):
-        try:
-            self.cursor.execute('''
-            DELETE FROM users_data
-            WHERE user_id = ?
-            ''', (user_id, ))
-            return 1
-        except:
-            return 0
+    def edit_user(self, user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local):
+        self.cursor.execute('''
+        UPDATE users_data
+        SET [Дата регистрации] = ?, 
+            Фотография = ?, 
+            ФИО = ?, 
+            Пол = ?, 
+            [Дата рождения] = ?, 
+            Образование = ?, 
+            Курс = ?, 
+            Специальность = ?, 
+            [Мин. ЗП] = ?, 
+            [Тяжелый труд] = ?, 
+            [Средний труд] = ?, 
+            [Творческий труд] = ?, 
+            [Иные работы] = ?, 
+            Инструменты = ?, 
+            Телефон = ?, 
+            Местный = ?
+        WHERE Телеграм_ID = ?
+        ''', (data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local, user_id))
+        self.conn.commit()
 
     def close(self):
         self.conn.close()

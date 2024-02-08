@@ -306,19 +306,35 @@ def process_save_step(message):
         tools = temp_user_data[user_id]['Инструменты в наличии']
         phone = temp_user_data[user_id]['Телефон']
         local = temp_user_data[user_id]['Местный']
-        if 'Курс' in temp_user_data[user_id]:
-            course = temp_user_data[user_id]['Курс']
-            if 'Специальность' in temp_user_data[user_id]:
-                profession = temp_user_data[user_id]['Специальность']
-                db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+        if db.user_is_exist(user_id):
+            if 'Курс' in temp_user_data[user_id]:
+                course = temp_user_data[user_id]['Курс']
+                if 'Специальность' in temp_user_data[user_id]:
+                    profession = temp_user_data[user_id]['Специальность']
+                    db.edit_user(user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                    mess = 'Отлично, данные обновлены'
+                else:
+                    db.edit_user(user_id, data_reg, photo, fio, sex, born, education_level, course, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                    mess = 'Отлично, данные обновлены'
             else:
-                db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, course, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                db.edit_user(user_id, data_reg, photo, fio, sex, born, education_level, None, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                mess = 'Отлично, данные обновлены'
+            temp_user_data.pop(user_id)
+            bot.send_message(user_id, mess, reply_markup=hide_board)
         else:
-            db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, None, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
-        mess = 'Отлично, регистрация завершена'
-        temp_user_data.pop(user_id)
-        bot.send_message(user_id, mess)
-        print('Зарегистрирован новый пользователь')
+            if 'Курс' in temp_user_data[user_id]:
+                course = temp_user_data[user_id]['Курс']
+                if 'Специальность' in temp_user_data[user_id]:
+                    profession = temp_user_data[user_id]['Специальность']
+                    db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                else:
+                    db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, course, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+            else:
+                db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, None, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+            mess = 'Отлично, регистрация завершена'
+            temp_user_data.pop(user_id)
+            bot.send_message(user_id, mess)
+            print('Зарегистрирован новый пользователь')
     else:
         temp_user_data[user_id] = {}
         mess = bot.send_message(user_id, 'Хорошо, начнем сначала.\nОтправьте пожалуйста свое фото', reply_markup=hide_board)
@@ -332,63 +348,33 @@ def get_job(message):
 @bot.message_handler(commands=['profile'])
 def profile(message):
     user_id = message.from_user.id
-    if db.user_is_exist(user_id):
-        info = db.get_user_info(user_id)
-        data_reg = info[0]
-        profit = info[1]
-        orders = info[2]
-        fio = info[3]
-        sex = info[4]
-        born = info[5]
-        education_level = info[6]
-        profession = info[7]
-        phone = info[8]
-        add_information = info[9]
-        try: 
-            profession = temp_user_data[user_id]['profession']
-            mess = 'Ваш профиль:\nДата регистрации: {0}\nЗаработок: {1}\nВыполненных заказов: {2}\nФИО: {3}\nПол: {4}\nДата рождения: {5}\nОбразование: {6}\nСпециализация: {7}\nТелефон: {8}\nДополнительная информация: {9}'.format(data_reg, profit, orders, fio, sex, born, education_level, profession, phone, add_information)
-        except:
-            mess = 'Ваш профиль:\nДата регистрации: {0}\nЗаработок: {1}\nВыполненных заказов: {2}\nФИО: {3}\nПол: {4}\nДата рождения: {5}\nОбразование: {6}\nТелефон: {7}\nДополнительная информация: {8}'.format(data_reg, profit, orders, fio, sex, born, education_level, phone, add_information)
-        bot.send_message(user_id, text=mess)
+    if db.user_is_exist(user_id): 
+        columns = ['Дата регистрации', 'Фотография', 'ФИО', 'Пол', 'Дата рождения', 'Образование', 'Курс', 'Специальность', 'Мин. ЗП', 'Тяжелый труд', 'Средний труд', 'Творческий труд', 'Иные работы', 'Инструменты', 'Телефон', 'Местный', 'Заработок', 'Заказы']
+        user_info = db.get_user_info(user_id)
+        mess = 'Данные вашего профиля:'
+        photo = user_info[1]
+        for column, value in zip(columns, user_info):
+            if (value != None and column != 'Фотография'):
+                mess += '\n{0}: {1}'.format(column, value)
+        markup = types.InlineKeyboardMarkup(row_width=3)
+        btn_edit = types.InlineKeyboardButton('Заполнить заново', callback_data='restart')
+        markup.add(btn_edit)
+        bot.send_photo(user_id, photo, mess, reply_markup=markup)
     else:
-        pass
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        btn = types.KeyboardButton('Да')
+        markup.add(btn)
+        mess = bot.send_message(user_id, 'Вы еще не зарегистрированы. Хотите пройти регистрацию?', reply_markup=markup )
+        bot.register_next_step_handler(mess, start_reg)
 
 
 @bot.callback_query_handler(func= lambda call: True)
 def response(callback):
     user_id = callback.from_user.id
-    if callback.data == 'start_reg':
-        mess = 'Отлично. Для начала необходимо пройти небольшую анкету, чтобы нам было проще подобрать подходящую работу.\nВведите свое ФИО полностью'
-        bot.send_message(user_id, text=mess)
-        temp_user_data[user_id]['status'] = 'waiting_fio'
-    if callback.data == 'save_user':
-        data_reg = datetime.date.today()
-        fio = temp_user_data[user_id]['fio']
-        sex = temp_user_data[user_id]['sex']
-        born = temp_user_data[user_id]['born']
-        education_level = temp_user_data[user_id]['education_level']
-        phone = temp_user_data[user_id]['phone']
-        add_information = temp_user_data[user_id]['add_information']
-        try:
-            if 'profession' in temp_user_data[user_id]:
-                profession = temp_user_data[user_id]['profession']
-                db.add_user(user_id, data_reg, fio, sex, born, education_level, profession, phone, add_information)
-            else:
-                db.add_user(user_id, data_reg, fio, sex, born, education_level, 'NULL', phone, add_information)
-
-            temp_user_data.pop(user_id)
-            mess = 'Регистрация завершена, перейти к поиску работы?'
-            markup = types.InlineKeyboardMarkup()
-            button_yes = types.InlineKeyboardButton(text='Да', callback_data='finding_job')
-            markup.add(button_yes)
-            bot.send_message(user_id, text=mess, reply_markup=markup)
-        except:
-            bot.send_message(user_id, 'Ошибка. Повторите попытку позже')
-
     if callback.data == 'restart':
         temp_user_data[user_id] = {}
-        mess = bot.send_message(user_id, 'Хорошо, начнем! Напиши свое ФИО', reply_markup=hide_board)
-        bot.register_next_step_handler(mess, process_fio_step)
+        mess = bot.send_message(user_id, 'Хорошо, начнем! Отправьте свое фото', reply_markup=hide_board)
+        bot.register_next_step_handler(mess, process_photo_step)
     
     if callback.data == 'finding_job':
         bot.send_message(user_id, 'Функция еще находится в разработке')
