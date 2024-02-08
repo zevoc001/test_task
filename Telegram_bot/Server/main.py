@@ -318,6 +318,7 @@ def process_save_step(message):
         mess = 'Отлично, регистрация завершена'
         temp_user_data.pop(user_id)
         bot.send_message(user_id, mess)
+        print('Зарегистрирован новый пользователь')
     else:
         temp_user_data[user_id] = {}
         mess = bot.send_message(user_id, 'Хорошо, начнем сначала.\nОтправьте пожалуйста свое фото', reply_markup=hide_board)
