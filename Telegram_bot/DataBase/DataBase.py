@@ -20,9 +20,8 @@ class Telegram_DB:
                 Фотография          BLOB,
                 ФИО                 TEXT    NOT NULL,
                 Пол                 TEXT    NOT NULL
-                                    CHECK (sex = "Мужской" OR "Женский"),
+                                    CHECK (Пол = "Мужской" OR "Женский"),
                 [Дата рождения]     TEXT    NOT NULL,
-                Возраст             INTEGER,
                 [Место жительства]  TEXT,
                 Образование         TEXT    NOT NULL,
                 Курс                INTEGER,
@@ -31,8 +30,10 @@ class Telegram_DB:
                 [Тяжелый труд]      INTEGER,
                 [Средний труд]      INTEGER,
                 [Творческий труд]   INTEGER,
+                [Иные работы]       TEXT,
                 [Рабочее время]     TEXT,
                 Инструменты         ТEXT,
+                Местный             INTEGER,
                 Языки               TEXT,
                 Телефон             TEXT    NOT NULL,
                 Водитель            TEXT,
@@ -43,24 +44,24 @@ class Telegram_DB:
         ''')
         self.conn.commit()
     
-    def add_user(self, user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, tools, phone):
+    def add_user(self, user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local):
         self.cursor.execute('''
-        INSERT INTO users_data (Телеграм_ID, [Дата регистрации], Фото, ФИО, Пол, [Дата рождения], Образование, Курс, Специальность, [Мин. ЗП], [Тяжелый труд], [Средний труд], [Творческий труд], Инструменты, Телефон)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, tools, phone))
+        INSERT INTO users_data (Телеграм_ID, [Дата регистрации], Фотография, ФИО, Пол, [Дата рождения], Образование, Курс, Специальность, [Мин. ЗП], [Тяжелый труд], [Средний труд], [Творческий труд], [Иные работы], Инструменты, Телефон, Местный)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local))
         self.conn.commit()
     
     def get_user_info(self, user_id):
         result = self.cursor.execute('''
-        SELECT [Дата регистрации], Фото, ФИО, Пол, [Дата рождения], Образование, Курс, Специальность, [Мин. ЗП], [Тяжелый труд], [Средний труд], [Творческий труд], Инструменты, Телефон, Заработок, Заказы FROM users_data
-        WHERE user_id = ?
+        SELECT [Дата регистрации], Фотография, ФИО, Пол, [Дата рождения], Образование, Курс, Специальность, [Мин. ЗП], [Тяжелый труд], [Средний труд], [Творческий труд], [Иные работы], Инструменты, Телефон, Местный, Заработок, Заказы FROM users_data
+        WHERE Телеграм_ID = ?
         ''', (user_id, )).fetchone()
         return result
     
     def user_is_exist(self, user_id):
         user = self.cursor.execute('''
         SELECT * FROM users_data
-        WHERE user_id = ?
+        WHERE Телеграм_ID = ?
         ''', (user_id, )).fetchone()
         if user is not None:
             return 1

@@ -254,7 +254,7 @@ def process_artwork_step(message):
 
 def process_addwork_step(message):
     user_id = message.from_user.id
-    temp_user_data[user_id]['Дополнительные работы'] = message.text
+    temp_user_data[user_id]['Иные работы'] = message.text
     mess = get_mess_tools(user_id)
     bot.register_next_step_handler(mess, process_tools_step)
 
@@ -278,26 +278,50 @@ def process_local_step(message):
     user_id = message.from_user.id
     if message.text in ['Да', 'Нет']:
         temp_user_data[user_id]['Местный'] = message.text
-
-        mess = get_mess_final(user_id)
         photo = temp_user_data[user_id]['Фотография']
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn_save = types.KeyboardButton('Сохранить')
         btn_restart = types.KeyboardButton('Заполнить заново')
         markup.add(btn_save, btn_restart)
-        bot.send_photo(user_id, photo, mess, reply_markup=markup)
+        mess = bot.send_photo(user_id, photo, get_mess_final(user_id), reply_markup=markup)
+        bot.register_next_step_handler(mess, process_save_step)
     else:
         mess = bot.send_message(user_id, 'Неверный ввод. Выберите один из предложенных вариантов ответа')
         bot.register_next_step_handler(mess, process_local_step)
 
-def process_check_step(message):
+def process_save_step(message):
     user_id = message.from_user.id
     if message.text == 'Сохранить':
+        data_reg = datetime.date.today()
+        photo = temp_user_data[user_id]['Фотография']
+        fio = temp_user_data[user_id]['ФИО']
+        sex = temp_user_data[user_id]['Пол']
+        born = temp_user_data[user_id]['Дата рождения']
+        education_level = temp_user_data[user_id]['Образование']
+        min_salary = temp_user_data[user_id]['Минимальная оплата (в час)']
+        hardwork = temp_user_data[user_id]['Тяжелая работа']
+        midwork = temp_user_data[user_id]['Работа средней сложности']
+        artwork = temp_user_data[user_id]['Творческая работа']
+        addwork = temp_user_data[user_id]['Иные работы']
+        tools = temp_user_data[user_id]['Инструменты в наличии']
+        phone = temp_user_data[user_id]['Телефон']
+        local = temp_user_data[user_id]['Местный']
+        if 'Курс' in temp_user_data[user_id]:
+            course = temp_user_data[user_id]['Курс']
+            if 'Специальность' in temp_user_data[user_id]:
+                profession = temp_user_data[user_id]['Специальность']
+                db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+            else:
+                db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, course, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+        else:
+            db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, None, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
         mess = 'Отлично, регистрация завершена'
+        temp_user_data.pop(user_id)
         bot.send_message(user_id, mess)
     else:
-        pass
-        
+        temp_user_data[user_id] = {}
+        mess = bot.send_message(user_id, 'Хорошо, начнем сначала.\nОтправьте пожалуйста свое фото', reply_markup=hide_board)
+        bot.register_next_step_handler(mess, process_photo_step)
 
 def get_job(message):
     user_id = message.from_user.id
