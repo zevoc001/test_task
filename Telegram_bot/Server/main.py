@@ -51,7 +51,7 @@ def get_mess_profission(user_id):
     return mess
 
 def get_mess_min_salary(user_id):
-    mess = bot.send_message(user_id, 'За какую оплату в час вы готовы работать?\nНапишите числом', reply_markup=hide_board)
+    mess = bot.send_message(user_id, 'За сколько рублей в час вы готовы работать?\nНапишите числом', reply_markup=hide_board)
     return mess
 
 def get_mess_hardwork(user_id, sex):
