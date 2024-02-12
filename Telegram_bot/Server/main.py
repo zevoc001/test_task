@@ -116,11 +116,10 @@ def start(message):
     if db.user_is_exist(user_id):
         info = db.get_user_info(user_id)
         fio = info[2]
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        button = types.KeyboardButton('Да')
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        button = types.InlineKeyboardButton('Да', callback_data='finding_job')
         markup.add(button)
-        mess = bot.send_message(user_id, 'Здравствуйте, {0}. Хотите начать поиск работы?'.format(fio), reply_markup=markup)
-        bot.register_next_step_handler(mess, get_job)
+        bot.send_message(user_id, 'Здравствуйте, {0}. Хотите начать поиск работы?'.format(fio), reply_markup=markup)
     else:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         button = types.KeyboardButton('Да')
