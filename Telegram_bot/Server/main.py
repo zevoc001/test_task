@@ -120,7 +120,7 @@ def start(message):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         button = types.KeyboardButton('Да')
         markup.add(button)
-        mess = bot.send_message(user_id, 'Здравствуйте. Мы компания, которая помогает найти работу. Хотите начать?', reply_markup=markup)
+        mess = bot.send_message(user_id, 'Здравствуйте. Мы компания, которая помогает найти работу. В данным момент мы работаем в тестовом режиме. Вы можете помочь нам, направляя рекомендации и пожелания на почту: ...,\nпо телефону: +7 962 453-99-94 (Telegram, WhatsApp),\n или при посещении нашего офиса по адресу: г. Ставрополь, ул.  Михаила морозова, д 25.\nСогласны ли вы продолжить работу в таком режиме?', reply_markup=markup)
         bot.register_next_step_handler(mess, start_reg)
 
 def start_reg(message):
