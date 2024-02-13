@@ -44,16 +44,16 @@ class Telegram_DB:
         ''')
         self.conn.commit()
     
-    def add_user(self, user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local):
+    def add_user(self, user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, residence_place):
         self.cursor.execute('''
-        INSERT INTO users_data (Телеграм_ID, [Дата регистрации], Фотография, ФИО, Пол, [Дата рождения], Образование, Курс, Специальность, [Мин. ЗП], [Тяжелый труд], [Средний труд], [Творческий труд], [Иные работы], Инструменты, Телефон, Местный)
+        INSERT INTO users_data (Телеграм_ID, [Дата регистрации], Фотография, ФИО, Пол, [Дата рождения], Образование, Курс, Специальность, [Мин. ЗП], [Тяжелый труд], [Средний труд], [Творческий труд], [Иные работы], Инструменты, Телефон, [Место жительства])
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local))
+        ''', (user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, residence_place))
         self.conn.commit()
     
     def get_user_info(self, user_id):
         result = self.cursor.execute('''
-        SELECT [Дата регистрации], Фотография, ФИО, Пол, [Дата рождения], Образование, Курс, Специальность, [Мин. ЗП], [Тяжелый труд], [Средний труд], [Творческий труд], [Иные работы], Инструменты, Телефон, Местный, Заработок, Заказы FROM users_data
+        SELECT [Дата регистрации], Фотография, ФИО, Пол, [Дата рождения], Образование, Курс, Специальность, [Мин. ЗП], [Тяжелый труд], [Средний труд], [Творческий труд], [Иные работы], Инструменты, Телефон, [Место жительства], Заработок, Заказы FROM users_data
         WHERE Телеграм_ID = ?
         ''', (user_id, )).fetchone()
         return result
@@ -68,7 +68,7 @@ class Telegram_DB:
         else:
             return 0
     
-    def edit_user(self, user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local):
+    def edit_user(self, user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, residence_place):
         self.cursor.execute('''
         UPDATE users_data
         SET [Дата регистрации] = ?, 
@@ -86,9 +86,9 @@ class Telegram_DB:
             [Иные работы] = ?, 
             Инструменты = ?, 
             Телефон = ?, 
-            Местный = ?
+            [Место жительства] = ?
         WHERE Телеграм_ID = ?
-        ''', (data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local, user_id))
+        ''', (data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, residence_place, user_id))
         self.conn.commit()
         
 

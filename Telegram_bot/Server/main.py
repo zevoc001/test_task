@@ -95,11 +95,7 @@ def get_mess_tools(user_id):
     return mess
 
 def get_mess_local(user_id):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn_yes = types.KeyboardButton('Да')
-    btn_no = types.KeyboardButton('Нет')
-    markup.add(btn_yes, btn_no)
-    mess = bot.send_message(user_id, 'Почти закончили. Хорошо ли вы ориентируетесь в Ставрополе?', reply_markup=markup)
+    mess = bot.send_message(user_id, 'Почти закончили. Осталось написать ваш адрес проживания (город, район, улица, дом)', reply_markup=hide_board)
     return mess
 
 def get_mess_final(user_id):
@@ -275,18 +271,15 @@ def process_phone_step(message):
 
 def process_local_step(message):
     user_id = message.from_user.id
-    if message.text in ['Да', 'Нет']:
-        temp_user_data[user_id]['Местный'] = message.text
-        photo = temp_user_data[user_id]['Фотография']
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        btn_save = types.KeyboardButton('Сохранить')
-        btn_restart = types.KeyboardButton('Заполнить заново')
-        markup.add(btn_save, btn_restart)
-        mess = bot.send_photo(user_id, photo, get_mess_final(user_id), reply_markup=markup)
-        bot.register_next_step_handler(mess, process_save_step)
-    else:
-        mess = bot.send_message(user_id, 'Неверный ввод. Выберите один из предложенных вариантов ответа')
-        bot.register_next_step_handler(mess, process_local_step)
+    temp_user_data[user_id]['Адрес проживания'] = message.text
+    photo = temp_user_data[user_id]['Фотография']
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn_save = types.KeyboardButton('Сохранить')
+    btn_restart = types.KeyboardButton('Заполнить заново')
+    markup.add(btn_save, btn_restart)
+    mess = bot.send_photo(user_id, photo, get_mess_final(user_id), reply_markup=markup)
+    bot.register_next_step_handler(mess, process_save_step)
+    
 
 def process_save_step(message):
     user_id = message.from_user.id
@@ -304,19 +297,19 @@ def process_save_step(message):
         addwork = temp_user_data[user_id]['Иные работы']
         tools = temp_user_data[user_id]['Инструменты в наличии']
         phone = temp_user_data[user_id]['Телефон']
-        local = temp_user_data[user_id]['Местный']
+        residence_place = temp_user_data[user_id]['Адрес проживания']
         if db.user_is_exist(user_id):
             if 'Курс' in temp_user_data[user_id]:
                 course = temp_user_data[user_id]['Курс']
                 if 'Специальность' in temp_user_data[user_id]:
                     profession = temp_user_data[user_id]['Специальность']
-                    db.edit_user(user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                    db.edit_user(user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, residence_place)
                     mess = 'Отлично, данные обновлены'
                 else:
-                    db.edit_user(user_id, data_reg, photo, fio, sex, born, education_level, course, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                    db.edit_user(user_id, data_reg, photo, fio, sex, born, education_level, course, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, residence_place)
                     mess = 'Отлично, данные обновлены'
             else:
-                db.edit_user(user_id, data_reg, photo, fio, sex, born, education_level, None, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                db.edit_user(user_id, data_reg, photo, fio, sex, born, education_level, None, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, residence_place)
                 mess = 'Отлично, данные обновлены'
             temp_user_data.pop(user_id)
             bot.send_message(user_id, mess, reply_markup=hide_board)
@@ -325,11 +318,11 @@ def process_save_step(message):
                 course = temp_user_data[user_id]['Курс']
                 if 'Специальность' in temp_user_data[user_id]:
                     profession = temp_user_data[user_id]['Специальность']
-                    db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                    db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, course, profession, min_salary, hardwork, midwork, artwork, addwork, tools, phone, residence_place)
                 else:
-                    db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, course, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                    db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, course, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, residence_place)
             else:
-                db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, None, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, local)
+                db.add_user(user_id, data_reg, photo, fio, sex, born, education_level, None, None, min_salary, hardwork, midwork, artwork, addwork, tools, phone, residence_place)
             mess = 'Отлично, регистрация завершена'
             temp_user_data.pop(user_id)
             bot.send_message(user_id, mess)
@@ -348,7 +341,7 @@ def get_job(message):
 def profile(message):
     user_id = message.from_user.id
     if db.user_is_exist(user_id): 
-        columns = ['Дата регистрации', 'Фотография', 'ФИО', 'Пол', 'Дата рождения', 'Образование', 'Курс', 'Специальность', 'Минимальная оплата (в час)', 'Тяжелый труд', 'Труд средней сложности', 'Творческий труд', 'Иные работы', 'Инструменты в наличии', 'Телефон', 'Местный', 'Заработок', 'Заказы']
+        columns = ['Дата регистрации', 'Фотография', 'ФИО', 'Пол', 'Дата рождения', 'Образование', 'Курс', 'Специальность', 'Минимальная оплата (в час)', 'Тяжелый труд', 'Труд средней сложности', 'Творческий труд', 'Иные работы', 'Инструменты в наличии', 'Телефон', 'Адрес проживания', 'Заработок', 'Заказы']
         user_info = db.get_user_info(user_id)
         mess = 'Данные вашего профиля:'
         photo = user_info[1]
