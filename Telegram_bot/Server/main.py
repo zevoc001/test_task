@@ -68,7 +68,7 @@ def get_mess_midwork(user_id, sex):
     btn_no = types.KeyboardButton('Нет')
     markup.add(btn_yes, btn_no)
     if sex == 'Мужской':
-       mess = bot.send_message(user_id, 'Готовы ли вы выполнять средней тяжести (уборка территорий, прочистка труб, и т.д.)?', reply_markup=markup)
+       mess = bot.send_message(user_id, 'Готовы ли вы выполнять работу средней сложности (уборка территорий, прочистка труб, и т.д.)?', reply_markup=markup)
        return mess
     else:
         mess = bot.send_message(user_id, 'Готовы ли вы ухаживать за детьми или пожилими людьми?', reply_markup=markup)
