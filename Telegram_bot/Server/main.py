@@ -3,7 +3,7 @@ import sys, re
 import telebot
 import datetime
 from telebot import types
-sys.path.insert(0, 'home\\test_task\\Telegram_bot\\DataBase')
+# sys.path.insert(0, 'home\\test_task\\Telegram_bot\\DataBase')
 from DataBase import Telegram_DB
 
 
